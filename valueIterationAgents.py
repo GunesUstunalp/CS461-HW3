@@ -45,6 +45,23 @@ class ValueIterationAgent(ValueEstimationAgent):
 
         # Write value iteration code here
         "*** YOUR CODE HERE ***"
+        states = self.mdp.getStates()
+
+        for i in range(self.iterations):
+            currValues = util.Counter()
+
+            for s in states:
+                    possibleActions = self.mdp.getPossibleActions(s)
+                    valuesArr = []
+
+                    for action in possibleActions:
+                        valuesArr.append(self.getQValue(s, action))
+
+                    if len(valuesArr) != 0: # checking if the state is terminal or not
+                        currValues[s] = max(valuesArr)
+
+            for s in currValues:
+                self.values[s] = currValues[s]
 
 
     def getValue(self, state):
@@ -60,7 +77,20 @@ class ValueIterationAgent(ValueEstimationAgent):
           value function stored in self.values.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        probabilities = self.mdp.getTransitionStatesAndProbs(state, action)
+        result = 0
+
+        for i in range(len(probabilities)):
+            probOfAction = probabilities[i][1]
+            nextState = probabilities[i][0]
+
+            actionResult = self.mdp.getReward(state, action, nextState)
+            actionResult += self.discount * self.getValue(nextState)
+            actionResult *= probOfAction
+
+            result += actionResult
+
+        return result
 
     def computeActionFromValues(self, state):
         """
@@ -72,7 +102,18 @@ class ValueIterationAgent(ValueEstimationAgent):
           terminal state, you should return None.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        possibleActions = self.mdp.getPossibleActions(state)
+
+        values = []
+        for action in possibleActions:
+            values.append(self.getQValue(state, action))
+
+
+        if len(values) != 0:
+            maxIndex = values.index(max(values))
+            return possibleActions[maxIndex]
+
+        return None
 
     def getPolicy(self, state):
         return self.computeActionFromValues(state)
